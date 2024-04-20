@@ -1,11 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from hirey.core import tasks
+
+from hirey.core.config import settings
 from hirey.api.routes import router as api_router
 
 
 def get_application():
-    app = FastAPI(title="Hirey", version="0.1.0")  # TODO: Add through config
+    app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 
     app.add_middleware(
         CORSMiddleware,
@@ -15,7 +18,10 @@ def get_application():
         allow_headers=["*"],
     )
 
-    app.include_router(api_router, prefix="/api")
+    app.add_event_handler("startup", tasks.create_start_app_handler(app))
+    app.add_event_handler("shutdown", tasks.create_stop_app_handler(app))
+
+    app.include_router(api_router, prefix=settings.API_PREFIX)
 
     return app
 
