@@ -9,7 +9,7 @@ import logging
 # we're appending the app directory to our path here so that we can import config easily
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[3]))
 
-from hirey.core.config import DATABASE_URL  # noqa
+from hirey.core.config import settings  # noqa
 
 # Alembic Config object, which provides access to values within the .ini file
 config = alembic.context.config
@@ -24,7 +24,7 @@ def run_migrations_online() -> None:
     Run migrations in 'online' mode
     """
     connectable = config.attributes.get("connection", None)
-    config.set_main_option("sqlalchemy.url", str(DATABASE_URL))
+    config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
 
     if connectable is None:
         connectable = engine_from_config(
