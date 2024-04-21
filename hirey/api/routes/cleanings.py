@@ -1,6 +1,10 @@
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Body, Depends, status
+
+from hirey.models.cleaning import CleaningCreate, CleaningPublic
+from hirey.db.repositories.cleanings import CleaningsRepository
+from hirey.api.dependencies.database import get_repository
 
 
 router = APIRouter()
@@ -24,3 +28,18 @@ async def get_all_cleanings() -> List[dict]:
     ]
 
     return cleanings
+
+
+@router.post(
+    "/",
+    response_model=CleaningPublic,
+    name="cleanings:create-cleaning",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_new_cleaning(
+    new_cleaning: CleaningCreate = Body(..., embed=True),
+    cleanings_repo: CleaningsRepository = Depends(get_repository(CleaningsRepository)),
+) -> CleaningPublic:
+    created_cleaning = await cleanings_repo.create_cleaning(new_cleaning=new_cleaning)
+
+    return created_cleaning
