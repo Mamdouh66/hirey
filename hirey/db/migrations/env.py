@@ -1,10 +1,13 @@
+import logging
+
 import pathlib
 import sys
 import alembic
+
 from sqlalchemy import engine_from_config, pool
 
 from logging.config import fileConfig
-import logging
+from hirey.core.config import settings
 
 # we're appending the app directory to our path here so that we can import config easily
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[3]))
@@ -44,7 +47,7 @@ def run_migrations_offline() -> None:
     """
     Run migrations in 'offline' mode.
     """
-    alembic.context.configure(url=str(DATABASE_URL))
+    alembic.context.configure(url=str(settings.DATABASE_URL))
 
     with alembic.context.begin_transaction():
         alembic.context.run_migrations()
