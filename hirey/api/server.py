@@ -7,6 +7,9 @@ from hirey.core.config import settings
 from hirey.api.routes import router as api_router
 
 
+
+# TODO: add lifespans with the new impl. : https://fastapi.tiangolo.com/advanced/events/
+
 def get_application():
     app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 
