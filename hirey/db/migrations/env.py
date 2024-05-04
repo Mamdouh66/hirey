@@ -5,7 +5,7 @@ import sys
 import alembic
 import os
 
-from sqlalchemy import engine_from_config, create_engine, pool
+from sqlalchemy import engine_from_config, create_engine, pool, text
 from psycopg2 import DatabaseError
 
 from logging.config import fileConfig
@@ -42,8 +42,8 @@ def run_migrations_online() -> None:
         )
         # drop testing db if it exists and create a fresh one
         with default_engine.connect() as default_conn:
-            default_conn.execute(f"DROP DATABASE IF EXISTS {settings.POSTGRES_DB}_test")
-            default_conn.execute(f"CREATE DATABASE {settings.POSTGRES_DB}_test")
+            default_conn.execute(text(f"DROP DATABASE IF EXISTS {settings.POSTGRES_DB}_test"))
+            default_conn.execute(text(f"CREATE DATABASE {settings.POSTGRES_DB}_test"))
 
     connectable = config.attributes.get("connection", None)
     config.set_main_option("sqlalchemy.url", DB_URL)
