@@ -2,14 +2,12 @@ import warnings
 import os
 
 import pytest
-import pytest_asyncio
 import alembic
 
 from typing import AsyncGenerator
 
-from asgi_lifespan import LifespanManager
+from async_asgi_testclient import TestClient
 from fastapi import FastAPI
-from httpx import AsyncClient
 from databases import Database
 from alembic.config import Config
 
@@ -38,11 +36,6 @@ def db(app: FastAPI) -> Database:
 
 
 @pytest.fixture
-async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
-    async with LifespanManager(app, startup_timeout=10, shutdown_timeout=10):
-        async with AsyncClient(
-            app=app,
-            base_url="http://testserver",
-            headers={"Content-Type": "application/json"},
-        ) as client:
-            yield client
+async def client(app: FastAPI) -> AsyncGenerator[TestClient, None]:
+    async with TestClient(app) as client:
+        yield client

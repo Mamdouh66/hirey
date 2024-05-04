@@ -2,14 +2,14 @@ import pytest
 
 from typing import AsyncGenerator
 
-from httpx import AsyncClient
 from fastapi import FastAPI, status
+from async_asgi_testclient import TestClient
 
 
 class TestCleaningsRoutes:
     @pytest.mark.asyncio
     async def test_routes_exist(
-        self, app: FastAPI, client: AsyncGenerator[AsyncClient, None]
+        self, app: FastAPI, client: AsyncGenerator[TestClient, None]
     ) -> None:
         async for test_client in client:
             res = await test_client.post(
@@ -19,7 +19,7 @@ class TestCleaningsRoutes:
 
     @pytest.mark.asyncio
     async def test_invalid_input_raises_error(
-        self, app: FastAPI, client: AsyncGenerator[AsyncClient, None]
+        self, app: FastAPI, client: AsyncGenerator[TestClient, None]
     ) -> None:
         async for test_client in client:
             res = await test_client.post(
