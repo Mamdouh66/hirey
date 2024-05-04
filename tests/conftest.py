@@ -16,15 +16,15 @@ from hirey.models.cleaning import CleaningCreate, CleaningInDB
 from hirey.db.repositories.cleanings import CleaningsRepository
 
 
-# @pytest.fixture(scope="session")
-# def apply_migrations():
-#     warnings.filterwarnings("ignore", category=DeprecationWarning)
-#     os.environ["TESTING"] = "1"
-#     config = Config("alembic.ini")
+@pytest.fixture(scope="session")
+def apply_migrations():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    os.environ["TESTING"] = "1"
+    config = Config("alembic.ini")
 
-#     alembic.command.upgrade(config, "head")
-#     yield
-#     alembic.command.downgrade(config, "base")
+    alembic.command.upgrade(config, "head")
+    yield
+    alembic.command.downgrade(config, "base")
 
 
 @pytest.fixture
