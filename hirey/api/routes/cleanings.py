@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, status, HTTPException
 
 from hirey.models.cleaning import CleaningCreate, CleaningPublic
 from hirey.db.repositories.cleanings import CleaningsRepository
@@ -28,6 +28,24 @@ async def get_all_cleanings() -> List[dict]:
     ]
 
     return cleanings
+
+
+@router.get(
+    "/{id}/", response_model=CleaningPublic, name="cleanings:get-cleaning-by-id"
+)
+async def get_cleaning_by_id(
+    id: int,
+    cleanings_repo: CleaningsRepository = Depends(get_repository(CleaningsRepository)),
+) -> CleaningPublic:
+    cleaning = await cleanings_repo.get_cleaning_by_id(id=id)
+
+    if not cleaning:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No cleaning found with that id.",
+        )
+
+    return cleaning
 
 
 @router.post(

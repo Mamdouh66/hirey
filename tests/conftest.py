@@ -12,6 +12,9 @@ from fastapi import FastAPI
 from databases import Database
 from alembic.config import Config
 
+from hirey.models.cleaning import CleaningCreate, CleaningInDB
+from hirey.db.repositories.cleanings import CleaningsRepository
+
 
 # @pytest.fixture(scope="session")
 # def apply_migrations():
@@ -34,6 +37,19 @@ def app() -> FastAPI:
 @pytest.fixture
 def db(app: FastAPI) -> Database:
     return app.state._db
+
+
+@pytest_asyncio.fixture
+async def test_cleaning(db: Database) -> CleaningInDB:
+    cleaning_repo = CleaningsRepository(db)
+    new_cleaning = CleaningCreate(
+        name="fake cleaning name",
+        description="fake cleaning description",
+        price=9.99,
+        cleaning_type="spot_clean",
+    )
+
+    return await cleaning_repo.create_cleaning(new_cleaning=new_cleaning)
 
 
 @pytest_asyncio.fixture

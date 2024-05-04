@@ -5,7 +5,7 @@ from typing import AsyncGenerator
 from fastapi import FastAPI, status
 from async_asgi_testclient import TestClient
 
-from hirey.models.cleaning import CleaningCreate
+from hirey.models.cleaning import CleaningCreate, CleaningInDB
 
 pytestmark = pytest.mark.asyncio
 
@@ -66,4 +66,30 @@ class TestCreateCleaning:
             app.url_path_for("cleanings:create-cleaning"),
             json={"new_cleaning": invalid_payload},
         )
+        assert res.status_code == status_code
+
+
+class TestGetCleaning:
+    async def test_get_cleaning_by_id(
+        self, app: FastAPI, client: TestClient, test_cleaning: CleaningInDB
+    ) -> None:
+        res = await client.get(
+            app.url_path_for("cleanings:get-cleaning-by-id", id=test_cleaning.id)
+        )
+        assert res.status_code == status.HTTP_200_OK
+        cleaning = CleaningInDB(**res.json())
+        assert cleaning == test_cleaning
+
+    @pytest.mark.parametrize(
+        "id, status_code",
+        (
+            (500, 404),
+            (-1, 404),
+            (None, 422),
+        ),
+    )
+    async def test_wrong_id_returns_error(
+        self, app: FastAPI, client: TestClient, id: int, status_code: int
+    ) -> None:
+        res = await client.get(app.url_path_for("cleanings:get-cleaning-by-id", id=id))
         assert res.status_code == status_code
