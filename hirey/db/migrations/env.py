@@ -3,8 +3,10 @@ import logging
 import pathlib
 import sys
 import alembic
+import os
 
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, create_engine, pool
+from psycopg2 import DatabaseError
 
 from logging.config import fileConfig
 from hirey.core.config import settings
@@ -26,27 +28,36 @@ def run_migrations_online() -> None:
     """
     Run migrations in 'online' mode
     """
-    connectable = config.attributes.get("connection", None)
-    config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
+    DB_URL = (
+        f"{settings.DATABASE_URL}_test"
+        if os.environ.get("TESTING")
+        else str(settings.DATABASE_URL)
+    )
 
-    if connectable is None:
-        connectable = engine_from_config(
-            config.get_section(config.config_ini_section),
-            prefix="sqlalchemy.",
-            poolclass=pool.NullPool,
+    # handle testing config for migrations
+    if os.environ.get("TESTING"):
+        # connect to primary db
+        default_engine = create_engine(
+            str(settings.DATABASE_URL), isolation_level="AUTOCOMMIT"
         )
+        # drop testing db if it exists and create a fresh one
+        with default_engine.connect() as default_conn:
+            default_conn.execute(f"DROP DATABASE IF EXISTS {settings.POSTGRES_DB}_test")
+            default_conn.execute(f"CREATE DATABASE {settings.POSTGRES_DB}_test")
 
-    with connectable.connect() as connection:
-        alembic.context.configure(connection=connection, target_metadata=None)
-
-        with alembic.context.begin_transaction():
-            alembic.context.run_migrations()
+    connectable = config.attributes.get("connection", None)
+    config.set_main_option("sqlalchemy.url", DB_URL)
 
 
 def run_migrations_offline() -> None:
     """
     Run migrations in 'offline' mode.
     """
+    if os.environ.get("TESTING"):
+        raise DatabaseError(
+            "Running testing migrations offline currently not permitted."
+        )
+
     alembic.context.configure(url=str(settings.DATABASE_URL))
 
     with alembic.context.begin_transaction():

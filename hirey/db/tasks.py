@@ -1,3 +1,4 @@
+import os
 import logging
 
 from fastapi import FastAPI
@@ -8,7 +9,12 @@ logger = logging.getLogger(__name__)
 
 
 async def connect_to_db(app: FastAPI) -> None:
-    database = Database(settings.DATABASE_URL, min_size=2, max_size=10)
+    DB_URL = (
+        f"{settings.DATABASE_URL}_test"
+        if os.environ.get("TESTING")
+        else settings.DATABASE_URL
+    )
+    database = Database(DB_URL, min_size=2, max_size=10)
 
     try:
         await database.connect()
