@@ -14,6 +14,11 @@ GET_CLEANING_BY_ID_QUERY = """
     WHERE id = :id;
 """
 
+GET_ALL_CLEANINGS_QUERY = """
+    SELECT id, name, description, price, cleaning_type
+    FROM cleanings
+"""
+
 
 class CleaningsRepository(BaseRepository):
     """ "
@@ -37,3 +42,9 @@ class CleaningsRepository(BaseRepository):
             return None
 
         return CleaningInDB(**cleaning)
+
+    async def get_all_cleanings(self) -> list[CleaningInDB]:
+        cleaning_records = await self.db.fetch_all(
+            query=GET_ALL_CLEANINGS_QUERY,
+        )
+        return [CleaningInDB(**l) for l in cleaning_records]
